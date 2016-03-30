@@ -37,15 +37,13 @@ public class MainServer {
             responseHeaders.set("Content-Type","text/html");
             BufferedInputStream Stream = new BufferedInputStream(new FileInputStream("/home/mohit/IdeaProjects/QuickChat/src/test/Chat.html"));
             int StreamLen = Stream.available();
-            String s=" <form name=\"hidform\"> <input type=\"hidden\" name=\"userName\" value='"+M.get("userName")+"'> </form> ";
             byte[] ByteStream = new byte[StreamLen];
             Stream.read(ByteStream,0,StreamLen);
             OutputStream OutStream = data.getResponseBody();
-            data.sendResponseHeaders(200,StreamLen + Name.length() + s.length());
+            data.sendResponseHeaders(200,StreamLen + Name.length());
 
             OutStream.write(ByteStream);
             OutStream.write(Name.getBytes());
-            OutStream.write(s.getBytes());
             OutStream.close();
         }
     }
@@ -56,13 +54,11 @@ public class MainServer {
         responseHeaders.set("Content-Type","text/html");
         BufferedInputStream Stream = new BufferedInputStream(new FileInputStream("/home/mohit/IdeaProjects/QuickChat/src/test/Home.html"));
         int StreamLen = Stream.available();
-        String s=" <form name=\"hidform\"> <input type=\"hidden\" name=\"userName\" value='"+"mohit"+"'> </form> ";
         byte[] ByteStream = new byte[StreamLen];
         Stream.read(ByteStream,0,StreamLen);
         OutputStream OutStream = data.getResponseBody();
-        data.sendResponseHeaders(200,StreamLen+s.length());
+        data.sendResponseHeaders(200,StreamLen);
         OutStream.write(ByteStream);
-        OutStream.write(s.getBytes());
         OutStream.close();
 
     }
