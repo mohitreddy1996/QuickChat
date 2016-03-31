@@ -1,10 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
     <title>Chat</title>
 </head>
 <body>
+<form method="GET" action="/Room" name="newRoom">
+    <input type="text" name="RoomNumber">
+    <input type="hidden" id="myText" name="userName" value="">
+    <input type="submit" name="Room" value="CreateNew" onclick="myFunction()">
+</form>
+
+
+<form method="get" action="/Room" name="viewRoom">
+    <input type="text" name="RoomNumber">
+    <input type="submit" name = "Room" value="Enter">
+</form>
+
+<script>
+    function myFunction() {
+        document.getElementById("myText").value = document.getElementById("username").value;
+    }
+</script>
 
 </body>
 </html>
