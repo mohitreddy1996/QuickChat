@@ -25,7 +25,7 @@ public class MainServer {
 
     public static void main(String[] args) throws Exception
     {
-        HttpServer server = HttpServer.create(new InetSocketAddress(8025), 0);
+        HttpServer server = HttpServer.create(new InetSocketAddress(8149), 0);
         server.createContext("/Home", new Home());
         server.createContext("/UserName",new UserName());
         server.createContext("/Room", new Room());
@@ -56,8 +56,28 @@ public class MainServer {
         }
     }
 
-    public static void displayChatRoom(HttpExchange data,String S,int marker,String RoomNumber) throws IOException
+    public static void ChatBox(String UsersGroup,HttpExchange data,String S,String RoomNumber,String SENDER) throws IOException
     {
+        Map<String,String> M = queryMap(data.getRequestURI().getQuery());
+        Headers responseHeaders = data.getResponseHeaders();
+        responseHeaders.set("Content-Type","text/html");
+        BufferedInputStream Stream = new BufferedInputStream(new FileInputStream("/home/mohit/IdeaProjects/QuickChat/src/test/ChatBox.html"));
+        int StreamLen = Stream.available();
+        byte[] ByteStream = new byte[StreamLen];
+        Stream.read(ByteStream,0,StreamLen);
+        OutputStream OutStream = data.getResponseBody();
+        data.sendResponseHeaders(200,StreamLen + S.length() + UsersGroup.length());
+
+        OutStream.write(ByteStream);
+        OutStream.write(S.getBytes());
+        OutStream.write(UsersGroup.getBytes());
+
+        OutStream.close();
+    }
+
+    public static void displayChatRoom(HttpExchange data,String S,int marker,String RoomNumber,String SENDER) throws IOException
+    {
+        String UsersGroup="";
         if(marker==0)
         {
             int flag=1;
@@ -65,19 +85,46 @@ public class MainServer {
             {
                 if(ChatRoom.RoomCheck(RoomNumber,Rooms))
                 {
-                    S+=" Room Number" + RoomNumber + " Already Exists!!";
+                    S+=" <h1>Room Number" + RoomNumber + " Already Exists!! </h1> ";
                     flag=0;
                     break;
                 }
             }
             if(flag==1)
             {
-                S+=" Room " + RoomNumber + " SuccessFully Created!!";
+                S+=" <h1> Room " + RoomNumber + " SuccessFully Created!! </h1>";
+                Rooms.add(new ChatRoom(RoomNumber));
             }
         }
         else if(marker==1)
         {
-            S += " Chats!!";
+            if(ChatRoom.RoomCheck(RoomNumber,Rooms)==false)
+            {
+                S+=" <h1> Room " + RoomNumber + " Doesn't Exist !! </h1>";
+            }
+            else
+            {
+                for(int i=0;i<Rooms.size();i++)
+                {
+                    if(Rooms.get(i).name.equals(RoomNumber))
+                    {
+                        Rooms.get(i).Members.add(SENDER);
+                    }
+                }
+                UsersGroup+="<h3> Members </h3>";
+                for(int i=0;i<Rooms.size();i++)
+                {
+                    if(Rooms.get(i).name.equals(RoomNumber))
+                    {
+                        for(int j=0;j<Rooms.get(i).Members.size();j++)
+                        {
+                            UsersGroup+="<br> "+Rooms.get(i).Members.get(j);
+                        }
+                    }
+                }
+                ChatBox(UsersGroup,data,S,RoomNumber,SENDER);
+                return;
+            }
         }
         Map<String,String> M = queryMap(data.getRequestURI().getQuery());
         Headers responseHeaders = data.getResponseHeaders();
@@ -87,10 +134,11 @@ public class MainServer {
         byte[] ByteStream = new byte[StreamLen];
         Stream.read(ByteStream,0,StreamLen);
         OutputStream OutStream = data.getResponseBody();
-        data.sendResponseHeaders(200,StreamLen + S.length());
+        data.sendResponseHeaders(200,StreamLen + S.length() + UsersGroup.length());
 
         OutStream.write(ByteStream);
         OutStream.write(S.getBytes());
+        OutStream.write(UsersGroup.getBytes());
 
         OutStream.close();
 
@@ -105,17 +153,17 @@ public class MainServer {
             String QueryString = M.get("Room");
             String RoomNumber = M.get("RoomNumber");
             String UserName = M.get("userName");
-            S += " Hi "+UserName+" <br>";
+            S += " <h2> Hi "+UserName+" </h2> <br> <h2> Welcome To QuickChat </h2><br>";
             S += " <form name=\"hidform\"> <input type=\"hidden\" id=\"username\" name=\"handle\" value='" + M.get("userName") + "'> </form> ";
 
             if(QueryString.equals("CreateNew"))
             {
-                displayChatRoom(data,S,0,RoomNumber);
+                displayChatRoom(data,S,0,RoomNumber,UserName);
                 return;
             }
             else if(QueryString.equals("Enter"))
             {
-                displayChatRoom(data,S,1,RoomNumber);
+                displayChatRoom(data,S,1,RoomNumber,UserName);
                 return;
             }
             else
