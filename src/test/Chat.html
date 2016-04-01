@@ -13,12 +13,14 @@
 
 <form method="get" action="/Room" name="viewRoom">
     <input type="text" name="RoomNumber">
-    <input type="submit" name = "Room" value="Enter">
+    <input type="hidden" id="myText1" name="userName" value="">
+    <input type="submit" name = "Room" value="Enter" onclick="myFunction()">
 </form>
 
 <script>
     function myFunction() {
         document.getElementById("myText").value = document.getElementById("username").value;
+        document.getElementById("myText1").value = document.getElementById("username").value;
     }
 </script>
 

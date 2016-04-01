@@ -25,7 +25,7 @@ public class MainServer {
 
     public static void main(String[] args) throws Exception
     {
-        HttpServer server = HttpServer.create(new InetSocketAddress(8023), 0);
+        HttpServer server = HttpServer.create(new InetSocketAddress(8025), 0);
         server.createContext("/Home", new Home());
         server.createContext("/UserName",new UserName());
         server.createContext("/Room", new Room());
@@ -55,49 +55,34 @@ public class MainServer {
             OutStream.close();
         }
     }
-    public static void displayChatRoom(HttpExchange data,String cond) throws IOException
+
+    public static void displayChatRoom(HttpExchange data,String S,int marker,String RoomNumber) throws IOException
     {
-
-        Map<String,String> M = queryMap(data.getRequestURI().getQuery());
-        String roomNumber = M.get("RoomNumber");
-        String S="";
-        if(cond.equals("New"))
+        if(marker==0)
         {
-            if(ChatRoom.RoomCheck(roomNumber,Rooms))
+            int flag=1;
+            for(int i=0;i<Rooms.size();i++)
             {
-                S+=" Room Already Exists";
-            }
-            else
-            {
-                Rooms.add(new ChatRoom(roomNumber));
-            }
-        }
-        else if(cond.equals("Enter"))
-        {
-            if(ChatRoom.RoomCheck(roomNumber,Rooms)==false)
-            {
-                S+=" Room Doesnt Exist!";
-            }
-            else
-            {
-                S += "Members";
-                for(int i=0;i<Rooms.size();i++)
+                if(ChatRoom.RoomCheck(RoomNumber,Rooms))
                 {
-                    if(Rooms.get(i).name.equals(roomNumber))
-                    {
-                        //Handle;
-                    }
-
+                    S+=" Room Number" + RoomNumber + " Already Exists!!";
+                    flag=0;
+                    break;
                 }
             }
+            if(flag==1)
+            {
+                S+=" Room " + RoomNumber + " SuccessFully Created!!";
+            }
         }
-        else
+        else if(marker==1)
         {
-            S+="Error!!";
+            S += " Chats!!";
         }
+        Map<String,String> M = queryMap(data.getRequestURI().getQuery());
         Headers responseHeaders = data.getResponseHeaders();
         responseHeaders.set("Content-Type","text/html");
-        BufferedInputStream Stream = new BufferedInputStream(new FileInputStream("/home/mohit/IdeaProjects/QuickChat/src/test/ChatRoom.html"));
+        BufferedInputStream Stream = new BufferedInputStream(new FileInputStream("/home/mohit/IdeaProjects/QuickChat/src/test/Room.html"));
         int StreamLen = Stream.available();
         byte[] ByteStream = new byte[StreamLen];
         Stream.read(ByteStream,0,StreamLen);
@@ -116,17 +101,28 @@ public class MainServer {
         public void handle(HttpExchange data) throws IOException
         {
             Map<String,String> M = queryMap(data.getRequestURI().getQuery());
-            String Query = M.get("Room");
             String S="";
-            if(Query.equals("CreateNew"))
+            String QueryString = M.get("Room");
+            String RoomNumber = M.get("RoomNumber");
+            String UserName = M.get("userName");
+            S += " Hi "+UserName+" <br>";
+            S += " <form name=\"hidform\"> <input type=\"hidden\" id=\"username\" name=\"handle\" value='" + M.get("userName") + "'> </form> ";
+
+            if(QueryString.equals("CreateNew"))
             {
-                displayChatRoom(data,"New");
+                displayChatRoom(data,S,0,RoomNumber);
+                return;
             }
-            else if(Query.equals("Enter"))
+            else if(QueryString.equals("Enter"))
             {
-                displayChatRoom(data,"Enter");
+                displayChatRoom(data,S,1,RoomNumber);
+                return;
             }
-            /*Headers responseHeaders = data.getResponseHeaders();
+            else
+            {
+                S += " Error!!";
+            }
+            Headers responseHeaders = data.getResponseHeaders();
             responseHeaders.set("Content-Type","text/html");
             BufferedInputStream Stream = new BufferedInputStream(new FileInputStream("/home/mohit/IdeaProjects/QuickChat/src/test/Room.html"));
             int StreamLen = Stream.available();
@@ -138,7 +134,7 @@ public class MainServer {
             OutStream.write(ByteStream);
             OutStream.write(S.getBytes());
 
-            OutStream.close();*/
+            OutStream.close();
         }
     }
 
