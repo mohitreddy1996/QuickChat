@@ -25,19 +25,51 @@ public class MainServer {
 
     public static void main(String[] args) throws Exception
     {
-        HttpServer server = HttpServer.create(new InetSocketAddress(8149), 0);
+        HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
         server.createContext("/Home", new Home());
         server.createContext("/UserName",new UserName());
         server.createContext("/Room", new Room());
+        server.createContext("/Chat", new Chat());
         server.setExecutor(null);
         server.start();
     }
+
+
+    static class Chat implements HttpHandler
+    {
+        public void handle(HttpExchange data) throws IOException
+        {
+            Map<String,String> M = queryMap(data.getRequestURI().getQuery());
+            String userName = M.get("UserName");
+            String RoomNumber = M.get("RoomNumber");
+            String Query = M.get("ChatSubmit");
+            String S = "";
+            if(Query.equals("Chat"))
+            {
+                S+=" <h1> Chat </h1>";
+            }
+            else if(Query.equals("Exit"))
+            {
+                System.out.print("Hi!");
+                for(int i=0;i<Rooms.size();i++)
+                {
+                    if(Rooms.get(i).name.equals(RoomNumber))
+                    {
+                        Rooms.get(i).Members.remove(userName);
+                    }
+                }
+            }
+            ChatBox(data,S,RoomNumber,userName);
+
+        }
+    }
+
     static class UserName implements HttpHandler
     {
         public void handle(HttpExchange data) throws IOException
         {
             Map<String,String> M = queryMap(data.getRequestURI().getQuery());
-            String Name = "Welcome " + M.get("userName") + " To QuickChat !!<br> ";
+            String Name = "Welcome " + M.get("userName") + " To QuickChat !! ";
             String F = " <form name=\"hidform\"> <input type=\"hidden\" id=\"username\" name=\"handle\" value='" + M.get("userName") + "'> </form> ";
             Headers responseHeaders = data.getResponseHeaders();
             responseHeaders.set("Content-Type","text/html");
@@ -56,21 +88,37 @@ public class MainServer {
         }
     }
 
-    public static void ChatBox(String UsersGroup,HttpExchange data,String S,String RoomNumber,String SENDER) throws IOException
+    public static void ChatBox(HttpExchange data,String S,String RoomNumber,String SENDER) throws IOException
     {
+        String UsersGroup="";
+        UsersGroup+="<h3> Members :</h3>";
+        for(int i=0;i<Rooms.size();i++)
+        {
+            if(Rooms.get(i).name.equals(RoomNumber))
+            {
+                for(int j=0;j<Rooms.get(i).Members.size();j++)
+                {
+                    UsersGroup+="<br> "+Rooms.get(i).Members.get(j);
+                }
+            }
+        }
         Map<String,String> M = queryMap(data.getRequestURI().getQuery());
         Headers responseHeaders = data.getResponseHeaders();
         responseHeaders.set("Content-Type","text/html");
+        String HiddenData1 = " <form name=\"hidform\"> <input type=\"hidden\" id=\"username\" name=\"UserName\" value='" + SENDER + "'> </form> ";
+        String HiddenData2 = " <form name=\"hidform2\"> <input type=\"hidden\" id=\"roomnumber\" name=\"RoomNumber\" value='" + RoomNumber + "'> </form> ";
         BufferedInputStream Stream = new BufferedInputStream(new FileInputStream("/home/mohit/IdeaProjects/QuickChat/src/test/ChatBox.html"));
         int StreamLen = Stream.available();
         byte[] ByteStream = new byte[StreamLen];
         Stream.read(ByteStream,0,StreamLen);
         OutputStream OutStream = data.getResponseBody();
-        data.sendResponseHeaders(200,StreamLen + S.length() + UsersGroup.length());
+        data.sendResponseHeaders(200,StreamLen + S.length() + UsersGroup.length() + HiddenData1.length() + HiddenData2.length());
 
         OutStream.write(ByteStream);
         OutStream.write(S.getBytes());
         OutStream.write(UsersGroup.getBytes());
+        OutStream.write(HiddenData1.getBytes());
+        OutStream.write(HiddenData2.getBytes());
 
         OutStream.close();
     }
@@ -111,18 +159,8 @@ public class MainServer {
                         Rooms.get(i).Members.add(SENDER);
                     }
                 }
-                UsersGroup+="<h3> Members </h3>";
-                for(int i=0;i<Rooms.size();i++)
-                {
-                    if(Rooms.get(i).name.equals(RoomNumber))
-                    {
-                        for(int j=0;j<Rooms.get(i).Members.size();j++)
-                        {
-                            UsersGroup+="<br> "+Rooms.get(i).Members.get(j);
-                        }
-                    }
-                }
-                ChatBox(UsersGroup,data,S,RoomNumber,SENDER);
+
+                ChatBox(data,S,RoomNumber,SENDER);
                 return;
             }
         }
@@ -153,8 +191,8 @@ public class MainServer {
             String QueryString = M.get("Room");
             String RoomNumber = M.get("RoomNumber");
             String UserName = M.get("userName");
-            S += " <h2> Hi "+UserName+" </h2> <br> <h2> Welcome To QuickChat </h2><br>";
-            S += " <form name=\"hidform\"> <input type=\"hidden\" id=\"username\" name=\"handle\" value='" + M.get("userName") + "'> </form> ";
+            S += " <h2> Hi "+UserName+" </h2> <h2> Welcome To QuickChat </h2>";
+
 
             if(QueryString.equals("CreateNew"))
             {
