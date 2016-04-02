@@ -25,7 +25,7 @@ public class MainServer {
 
     public static void main(String[] args) throws Exception
     {
-        HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
+        HttpServer server = HttpServer.create(new InetSocketAddress(8001), 0);
         server.createContext("/Home", new Home());
         server.createContext("/UserName",new UserName());
         server.createContext("/Room", new Room());
@@ -44,20 +44,47 @@ public class MainServer {
             String RoomNumber = M.get("RoomNumber");
             String Query = M.get("ChatSubmit");
             String S = "";
+            String Message = M.get("Message");
+            System.out.print(Query);
             if(Query.equals("Chat"))
             {
-                S+=" <h1> Chat </h1>";
-            }
-            else if(Query.equals("Exit"))
-            {
-                System.out.print("Hi!");
+                Chats Ch = new Chats(Message,userName);
                 for(int i=0;i<Rooms.size();i++)
                 {
                     if(Rooms.get(i).name.equals(RoomNumber))
                     {
+                        Rooms.get(i).chats.add(Ch);
+                    }
+                }
+            }
+            else if(Query.equals("Fetch"))
+            {
+                for(int i=0;i<Rooms.size();i++)
+                {
+                    if(Rooms.get(i).name.equals(RoomNumber))
+                    {
+                        for(int j=Rooms.get(i).chats.size()-1;j>=Math.max(0,Rooms.get(i).chats.size()-15);j--)
+                        {
+                            String TempMessage = "<h5> " + Rooms.get(i).chats.get(j).getSender() + " : " + Rooms.get(i).chats.get(j).getMessage() + " </h5>";
+                            S+=TempMessage;
+                        }
+                    }
+                }
+            }
+            else if(Query.equals("Exit"))
+            {
+                System.out.print(userName);
+                for(int i=0;i<Rooms.size();i++)
+                {
+
+                    if(Rooms.get(i).name.equals(RoomNumber))
+                    {
+                        System.out.print(userName);
                         Rooms.get(i).Members.remove(userName);
                     }
                 }
+                ViewHome(data);
+                return;
             }
             ChatBox(data,S,RoomNumber,userName);
 

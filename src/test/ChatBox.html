@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ChatBox</title>
+</head>
+<body>
+    <form name = "Chats" method="GET" action="/Chat">
+        <input type="hidden" id="Chat" name="UserName" value="">
+        <input type = "text" id = "ChatText" name="Message">
+        <input type="hidden" id="Chat1" name="RoomNumber" value="">
+        <input type="submit" value="Chat" name="ChatSubmit" id="goChats" onclick="myfunction()">
+    </form>
+    <form name="Fetch" method="GET" action="/Chat">
+
+        <input type = "hidden" id="Fetch" name="UserName" value = "">
+        <input type = "hidden" id="Fetch1" name="RoomNumber" value="">
+        <input type="submit" id="FetchIt" value="Fetch" name="ChatSubmit" onclick="myfunction2()">
+    </form>
+    <form name = "Exit" method="GET" action="/Chat">
+        <input type = "hidden" id="Exit1" name="UserName" value = "">
+        <input type = "hidden" id="Exit2" name="RoomNumber" value="">
+        <input type = "submit" value="Exit" name="ChatSubmit" id="goExit" onclick="myfunction1()">
+    </form>
+
+    <script>
+        function myfunction()
+        {
+            document.getElementById("Chat").value = document.getElementById("username").value;
+            document.getElementById("Chat1").value = document.getElementById("roomnumber").value;
+        }
+        function myfunction1()
+        {
+            document.getElementById("Exit1").value = document.getElementById("username").value;
+            document.getElementById("Exit2").value = document.getElementById("roomnumber").value;
+        }
+        function myfunction2() {
+            document.getElementById("Fetch").value = document.getElementById("username").value;
+            document.getElementById("Fetch1").value = document.getElementById("roomnumber").value;
+        }
+    </script>
+</body>
+</html>
